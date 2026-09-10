@@ -1,5 +1,6 @@
-import { createCalendlyBooking } from "@/lib/calendly";
+import { sendBookingEmails } from "@/lib/email";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { createReservation, updateEmailResult } from "@/lib/reservations";
 import { validateBookingPayload } from "@/lib/validation";
 
 export const runtime = "nodejs";
@@ -36,23 +37,50 @@ export async function POST(request: Request) {
     return Response.json({ message: validated.message }, { status: 400 });
   }
 
-  const result = await createCalendlyBooking(validated.data);
-  if (result.ok) return Response.json({ success: true }, { status: 201 });
-
-  if (result.reason === "rate_limited") {
+  if (process.env.BOOKING_ENABLED !== "true") {
     return Response.json(
-      { message: result.message },
-      {
-        status: 429,
-        headers: result.retryAfter
-          ? { "Retry-After": String(result.retryAfter) }
-          : undefined,
-      },
+      { message: "Online booking is temporarily paused while we update the schedule." },
+      { status: 503 },
     );
   }
 
-  return Response.json(
-    { message: result.message },
-    { status: result.reason === "unavailable" ? 409 : 503 },
-  );
+  try {
+    const result = await createReservation(validated.data);
+    if (!result.ok) {
+      return Response.json(
+        { message: result.reason === "unavailable"
+          ? "Someone has just booked this prayer slot. Please choose another one."
+          : "Please choose a valid prayer slot." },
+        { status: result.reason === "unavailable" ? 409 : 400 },
+      );
+    }
+
+    try {
+      const email = await sendBookingEmails(result.reservation, result.cancellationToken, {
+        notifyOrganiser: true,
+        scheduleReminder: true,
+      });
+      await updateEmailResult(result.reservation.id, {
+        ...email,
+        emailStatus: email.hadDeliveryDelay ? "delayed" : "sent",
+      });
+      return Response.json({ success: true, emailDelayed: email.hadDeliveryDelay }, { status: 201 });
+    } catch (emailError) {
+      console.error("Reservation saved but email delivery was delayed", emailError);
+      await updateEmailResult(result.reservation.id, { emailStatus: "delayed" }).catch((error) => {
+        console.error("Unable to record delayed email status", error);
+      });
+      return Response.json({
+        success: true,
+        emailDelayed: true,
+        message: "Your slot is reserved, but the confirmation email is delayed. The organiser can resend it.",
+      }, { status: 201 });
+    }
+  } catch (error) {
+    console.error("Reservation database request failed", error);
+    return Response.json(
+      { message: "Booking is temporarily unavailable. No reservation was created; please try again shortly." },
+      { status: 503 },
+    );
+  }
 }

@@ -13,6 +13,7 @@ export function BookingExperience({ initialSlots }: BookingExperienceProps) {
   const [slots, setSlots] = useState(initialSlots);
   const [selectedSlot, setSelectedSlot] = useState<PublicSlot | null>(null);
   const [confirmedSlot, setConfirmedSlot] = useState<PublicSlot | null>(null);
+  const [emailDelayed, setEmailDelayed] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const refreshSlots = useCallback(async (showProgress = false) => {
@@ -34,13 +35,14 @@ export function BookingExperience({ initialSlots }: BookingExperienceProps) {
     return () => window.clearInterval(timer);
   }, [refreshSlots]);
 
-  function handleBooked(slotId: string) {
+  function handleBooked(slotId: string, delayed: boolean) {
     const bookedSlot = slots.find((slot) => slot.id === slotId) ?? null;
     setSlots((current) =>
       current.map((slot) => (slot.id === slotId ? { ...slot, status: "booked" } : slot)),
     );
     setSelectedSlot(null);
     setConfirmedSlot(bookedSlot);
+    setEmailDelayed(delayed);
     void refreshSlots();
   }
 
@@ -51,7 +53,7 @@ export function BookingExperience({ initialSlots }: BookingExperienceProps) {
       <section className="schedule">
         <div className="section-heading">
           <div>
-            <h1>Let&apos;s Gather at the Feet of God</h1>
+            <h1>24 Hours at the Feet of God</h1>
             <p className="schedule__subtitle">Choose your time slot</p>
           </div>
         </div>
@@ -62,7 +64,7 @@ export function BookingExperience({ initialSlots }: BookingExperienceProps) {
           rel="noreferrer"
         >
           <span aria-hidden="true">⌖</span>
-          Holy Family Church Hall - Sutton SM11QU
+          Holy Family Church Hall - Sutton SM1 1QU
           <span className="schedule__location-action">Open in Google Maps ↗</span>
         </a>
         <p className="schedule__intro">
@@ -71,7 +73,7 @@ export function BookingExperience({ initialSlots }: BookingExperienceProps) {
         </p>
 
         <div className="calendar-legend-row">
-          <div className="availability-key" aria-label="Slot status legend">
+          <div className="availability-key" role="group" aria-label="Slot status legend">
             <span /> Available <span className="is-booked" /> Booked
           </div>
         </div>
@@ -93,7 +95,9 @@ export function BookingExperience({ initialSlots }: BookingExperienceProps) {
             <div className="confirmation-icon" aria-hidden="true">✓</div>
             <p className="eyebrow">Prayer slot reserved</p>
             <h2 id="confirmation-title">Thank you for standing with us.</h2>
-            <p>Your confirmation and calendar invitation will arrive by email shortly.</p>
+            <p>{emailDelayed
+              ? "Your slot is reserved. The confirmation email is delayed, and the organiser can resend it from the dashboard."
+              : "Your confirmation and calendar invitation will arrive by email shortly."}</p>
             <div className={`modal-slot modal-slot--${confirmedSlot.tone}`}>
               <strong>{confirmedSlot.timeLabel}</strong>
               <span>{confirmedSlot.dayLabel}, {confirmedSlot.dateLabel} · UK time</span>

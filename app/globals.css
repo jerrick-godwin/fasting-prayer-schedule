@@ -216,9 +216,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
   background: #fff;
   border-bottom: 1px solid var(--line);
 }
-.calendar-day-header > span { display: grid; place-items: center; color: #839087; border-right: 1px solid var(--line); font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.calendar-day-header > span { display: grid; place-items: center; color: #596760; border-right: 1px solid var(--line); font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
 .calendar-day-header > div { display: flex; align-items: baseline; gap: 13px; padding: 18px 25px; }
-.calendar-day-header small { color: #a27838; font-size: 9px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.calendar-day-header small { color: #76511b; font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
 .calendar-day-header strong { font-family: var(--font-display); font-size: 22px; font-weight: 500; }
 
 .calendar-slot-list { background: #fdfcf9; }
@@ -261,7 +261,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   display: grid;
   place-items: center;
   transform: translateY(-50%);
-  color: #76837c;
+  color: #55635c;
   background: #fdfcf9;
   font-size: 10px;
   font-weight: 700;
@@ -312,20 +312,20 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 .calendar-event:disabled > * { position: relative; z-index: 1; }
 
-.calendar-event--green { --slot-accent: #26734f; --slot-bg: #e0f0e7; }
-.calendar-event--orange { --slot-accent: #b85f1b; --slot-bg: #f8e8d8; }
-.calendar-event--blue { --slot-accent: #315f99; --slot-bg: #e0eaf5; }
-.calendar-event--yellow { --slot-accent: #9b7214; --slot-bg: #f7efcf; }
-.calendar-event--purple { --slot-accent: #704991; --slot-bg: #ece3f4; }
-.calendar-event--sky { --slot-accent: #347a9a; --slot-bg: #dff0f5; }
-.calendar-event--mint { --slot-accent: #4f8063; --slot-bg: #e4f1e7; }
-.calendar-event--pink { --slot-accent: #a35072; --slot-bg: #f5e1e9; }
-.calendar-event--red { --slot-accent: #9f3d3d; --slot-bg: #f3dfdd; }
+.calendar-event--green { --slot-accent: #1d5d3d; --slot-bg: #e0f0e7; }
+.calendar-event--orange { --slot-accent: #87400b; --slot-bg: #f8e8d8; }
+.calendar-event--blue { --slot-accent: #254f83; --slot-bg: #e0eaf5; }
+.calendar-event--yellow { --slot-accent: #705006; --slot-bg: #f7efcf; }
+.calendar-event--purple { --slot-accent: #5b3579; --slot-bg: #ece3f4; }
+.calendar-event--sky { --slot-accent: #23617b; --slot-bg: #dff0f5; }
+.calendar-event--mint { --slot-accent: #38664b; --slot-bg: #e4f1e7; }
+.calendar-event--pink { --slot-accent: #833756; --slot-bg: #f5e1e9; }
+.calendar-event--red { --slot-accent: #842d2d; --slot-bg: #f3dfdd; }
 
 .calendar-event__content { display: grid; gap: 4px; }
-.calendar-event__name { color: var(--slot-accent); font-size: 9px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+.calendar-event__name { color: var(--slot-accent); font-size: 11px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
 .calendar-event__content strong { font-family: var(--font-display); font-size: clamp(18px, 2.4vw, 26px); font-weight: 600; letter-spacing: -.025em; }
-.calendar-event__status { position: relative; z-index: 1; display: flex; align-items: center; gap: 7px; padding: 6px 10px; color: var(--slot-accent); background: rgba(255,255,255,.62); border-radius: 20px; font-size: 9px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.calendar-event__status { position: relative; z-index: 1; display: flex; align-items: center; gap: 7px; padding: 6px 10px; color: var(--slot-accent); background: rgba(255,255,255,.78); border-radius: 20px; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
 .calendar-event__status i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .calendar-event__status.is-booked { color: #555c58; }
 
@@ -382,6 +382,64 @@ footer p { margin: 0; font-size: 11px; }
 .confirmation-icon { width: 58px; height: 58px; margin: 0 auto 22px; display: grid; place-items: center; color: #fff; background: #2e845e; border-radius: 50%; font-size: 25px; }
 .confirmation-modal .modal-slot { text-align: left; }
 
+.cancel-page, .admin-login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: radial-gradient(circle at 10% 0%, rgba(203,164,97,.16), transparent 30%), var(--paper);
+}
+.cancel-card, .admin-login-card { width: min(100%, 590px); padding: clamp(30px, 6vw, 58px); background: #fff; border: 1px solid var(--line); box-shadow: 0 24px 70px rgba(20,35,29,.11); }
+.cancel-card h1, .admin-login-card h1, .admin-header h1 { margin: 0; font-family: var(--font-display); font-size: clamp(34px, 5vw, 52px); font-weight: 500; letter-spacing: -.035em; }
+.cancel-card > p:not(.eyebrow), .admin-login-card > p:not(.eyebrow) { color: var(--muted); font-size: 16px; line-height: 1.65; }
+.cancel-card .submit-button.is-danger { background: #8d3434; }
+.cancel-back-link { display: block; margin-top: 18px; color: var(--muted); text-align: center; }
+.cancel-home-link { display: block; margin-top: 28px; text-align: center; text-decoration: none; }
+.admin-login-form { display: grid; gap: 18px; margin-top: 28px; }
+.admin-login-form label { display: grid; gap: 8px; font-weight: 700; }
+.admin-login-form input, .attach-details input { width: 100%; padding: 13px 14px; color: var(--ink); background: #fff; border: 1px solid #ccd2ce; }
+
+.admin-page { min-height: 100vh; padding: clamp(24px, 5vw, 70px); background: #f8f6f0; }
+.admin-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 30px; max-width: 1400px; margin: 0 auto 34px; }
+.admin-header__actions { display: flex; align-items: center; gap: 12px; }
+.admin-header__actions a, .admin-header__actions button { display: inline-block; padding: 10px 14px; color: var(--forest); background: #fff; border: 1px solid var(--line); cursor: pointer; text-decoration: none; }
+.admin-stats { max-width: 1400px; margin: 0 auto 25px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.admin-stats div { display: grid; gap: 3px; padding: 20px; background: #fff; border: 1px solid var(--line); }
+.admin-stats strong { font-family: var(--font-display); font-size: 35px; font-weight: 500; }
+.admin-stats span { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.admin-slot-manager { max-width: 1400px; margin: 0 auto 25px; padding: 22px; background: #fff; border: 1px solid var(--line); }
+.admin-slot-manager__heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 18px; }
+.admin-slot-manager__heading h2 { margin: 3px 0 0; font-family: var(--font-display); font-size: 30px; font-weight: 500; }
+.admin-slot-manager__heading > p { max-width: 440px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.admin-slot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.admin-slot-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 14px; background: #f8f6f0; border: 1px solid var(--line); }
+.admin-slot-card div { min-width: 0; }
+.admin-slot-card small { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
+.admin-slot-card form, .admin-slot-card__hint { grid-column: 1 / -1; }
+.admin-slot-card button { width: 100%; padding: 8px 10px; color: var(--forest); background: #fff; border: 1px solid var(--line); cursor: pointer; }
+.admin-status--available { color: #456052; background: #e6eee9; }
+.admin-status--blocked { color: #735b21; background: #f4e7bb; }
+.admin-status--booked { color: #fff; background: #496357; }
+.admin-notice { max-width: 1400px; margin: 0 auto 18px; padding: 13px 16px; font-size: 14px; }
+.admin-notice.is-success { color: #20563f; background: #e2f1e8; }
+.admin-notice.is-error { color: #842c2c; background: #f7e4e2; }
+.admin-table-wrap { max-width: 1400px; margin: 0 auto; overflow-x: auto; background: #fff; border: 1px solid var(--line); }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.admin-table th { padding: 14px; color: var(--muted); background: #f3f0e8; font-size: 11px; letter-spacing: .08em; text-align: left; text-transform: uppercase; }
+.admin-table td { min-width: 110px; padding: 15px 14px; border-top: 1px solid var(--line); vertical-align: top; }
+.admin-table td small { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; }
+.admin-table td a { color: var(--forest); }
+.admin-status { display: inline-block; padding: 4px 8px; color: #456052; background: #e6eee9; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+.admin-status--cancelled, .admin-status--released { color: #756b5d; background: #eeeae2; }
+.admin-actions { display: flex; flex-wrap: wrap; gap: 7px; min-width: 220px !important; }
+.admin-actions button, .attach-details button { padding: 7px 10px; color: var(--forest); background: #f8f6f0; border: 1px solid var(--line); cursor: pointer; }
+.admin-actions button.is-danger { color: #8d3434; }
+.attach-details { width: 100%; }
+.attach-details summary { color: var(--forest); cursor: pointer; font-weight: 700; }
+.attach-details form { display: grid; gap: 7px; margin-top: 10px; }
+.confirm-details summary { color: #8d3434; cursor: pointer; font-weight: 700; }
+.confirm-details form { margin-top: 7px; }
+
 @keyframes fade-in { from { opacity: 0; } }
 @keyframes rise-in { from { opacity: 0; transform: translateY(14px); } }
 
@@ -413,15 +471,20 @@ footer p { margin: 0; font-size: 11px; }
   .calendar-row { grid-template-columns: 62px minmax(0, 1fr); }
   .calendar-row::before { left: 61px; }
   .calendar-row__guide time { width: 61px; }
-  .calendar-row__guide time { font-size: 9px; }
+  .calendar-row__guide time { font-size: 10px; }
   .calendar-event { width: calc(100% - 12px); margin: 0 6px; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 10px 11px; }
   .calendar-event__content strong { font-size: 17px; }
-  .calendar-event__status { padding: 5px 7px; font-size: 8px; }
+  .calendar-event__status { padding: 5px 7px; font-size: 10px; }
   .calendar-event__status i { display: none; }
   .closing-callout { margin: 0 18px 76px; padding: 38px 28px; }
   footer { align-items: flex-start; flex-direction: column; }
   .booking-modal { padding: 36px 22px 25px; }
   .booking-modal h2 { font-size: 35px; }
+  .admin-page { padding: 22px 14px; }
+  .admin-header { align-items: flex-start; flex-direction: column; }
+  .admin-stats { grid-template-columns: 1fr 1fr; }
+  .admin-slot-manager__heading { align-items: flex-start; flex-direction: column; }
+  .admin-slot-grid { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
