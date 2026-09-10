@@ -88,7 +88,7 @@ export const slots: readonly SlotDefinition[] = [
     end: "2026-09-18T22:55:00.000Z",
     duration: 235,
     tone: "purple",
-    initiallyBooked: false,
+    initiallyBooked: true,
   },
   {
     id: "slot-6",

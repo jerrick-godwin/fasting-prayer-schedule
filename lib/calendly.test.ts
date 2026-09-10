@@ -16,10 +16,10 @@ describe("Calendly booking integration", () => {
   });
   afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
-  function mockProvider(status: number, body: unknown) {
+  function mockProvider(status: number, body: unknown, headers?: HeadersInit) {
     const fetch = vi.fn()
       .mockResolvedValueOnce(Response.json({ collection: [{ start_time: "2026-09-18T11:00:00Z", status: "available" }] }))
-      .mockResolvedValueOnce(Response.json(body, { status }));
+      .mockResolvedValueOnce(Response.json(body, { status, headers }));
     vi.stubGlobal("fetch", fetch);
     return fetch;
   }
@@ -47,5 +47,17 @@ describe("Calendly booking integration", () => {
     expect(output).toContain("tracking.utm_campaign");
     expect(output).not.toContain(input.email);
     expect(output).not.toContain(input.phone);
+  });
+
+  it("tells the invitee how long to wait when Calendly rate limits booking", async () => {
+    mockProvider(429, {}, { "X-RateLimit-Reset": "3720" });
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    expect(await createCalendlyBooking(input)).toEqual({
+      ok: false,
+      reason: "rate_limited",
+      message: "Calendly is receiving too many booking requests. Please try again in about 2 hours.",
+      retryAfter: 3720,
+    });
   });
 });

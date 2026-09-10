@@ -23,7 +23,42 @@ type BookingInput = {
 
 type BookingResult =
   | { ok: true }
-  | { ok: false; reason: "unavailable" | "configuration" | "provider"; message: string };
+  | {
+      ok: false;
+      reason: "unavailable" | "configuration" | "provider" | "rate_limited";
+      message: string;
+      retryAfter?: number;
+    };
+
+function getRetryAfterSeconds(response: Response) {
+  const resetSeconds = Number(response.headers.get("x-ratelimit-reset"));
+  if (Number.isFinite(resetSeconds) && resetSeconds > 0) return Math.ceil(resetSeconds);
+
+  const retryAfter = response.headers.get("retry-after");
+  if (!retryAfter) return undefined;
+
+  const seconds = Number(retryAfter);
+  if (Number.isFinite(seconds) && seconds > 0) return Math.ceil(seconds);
+
+  const retryDate = Date.parse(retryAfter);
+  if (Number.isNaN(retryDate)) return undefined;
+  return Math.max(1, Math.ceil((retryDate - Date.now()) / 1_000));
+}
+
+function formatRetryDelay(seconds?: number) {
+  if (!seconds) return "a few minutes";
+  if (seconds < 60) return `${seconds} second${seconds === 1 ? "" : "s"}`;
+  if (seconds < 3_600) {
+    const minutes = Math.ceil(seconds / 60);
+    return `${minutes} minute${minutes === 1 ? "" : "s"}`;
+  }
+  if (seconds < 86_400) {
+    const hours = Math.ceil(seconds / 3_600);
+    return `${hours} hour${hours === 1 ? "" : "s"}`;
+  }
+  const days = Math.ceil(seconds / 86_400);
+  return `${days} day${days === 1 ? "" : "s"}`;
+}
 
 function isCalendlyEnabled() {
   return process.env.CALENDLY_ENABLED === "true";
@@ -172,6 +207,19 @@ export async function createCalendlyBooking(input: BookingInput): Promise<Bookin
         ok: false,
         reason: "unavailable",
         message: "Someone has just booked this prayer slot. Please choose another one.",
+      };
+    }
+    if (response.status === 429) {
+      const retryAfter = getRetryAfterSeconds(response);
+      console.warn(
+        "Calendly booking rate limited",
+        JSON.stringify({ status: response.status, retryAfter }),
+      );
+      return {
+        ok: false,
+        reason: "rate_limited",
+        message: `Calendly is receiving too many booking requests. Please try again in about ${formatRetryDelay(retryAfter)}.`,
+        retryAfter,
       };
     }
 

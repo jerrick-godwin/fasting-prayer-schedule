@@ -13,14 +13,14 @@ describe("prayer slot definitions", () => {
     expect(new Date(slot6!.start).getTime() - new Date(slot5!.end).getTime()).toBe(5 * 60 * 1000);
   });
 
-  it("marks slots 1, 3 and 9 as booked regardless of provider availability", () => {
+  it("marks slots 1, 3, 5 and 9 as booked regardless of provider availability", () => {
     const statuses = slots.map((slot) => toPublicSlot(slot, true).status);
     expect(statuses).toEqual([
       "booked",
       "available",
       "booked",
       "available",
-      "available",
+      "booked",
       "available",
       "available",
       "available",

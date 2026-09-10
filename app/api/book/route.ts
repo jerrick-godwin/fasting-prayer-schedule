@@ -39,6 +39,20 @@ export async function POST(request: Request) {
   const result = await createCalendlyBooking(validated.data);
   if (result.ok) return Response.json({ success: true }, { status: 201 });
 
-  const status = result.reason === "unavailable" ? 409 : 503;
-  return Response.json({ message: result.message }, { status });
+  if (result.reason === "rate_limited") {
+    return Response.json(
+      { message: result.message },
+      {
+        status: 429,
+        headers: result.retryAfter
+          ? { "Retry-After": String(result.retryAfter) }
+          : undefined,
+      },
+    );
+  }
+
+  return Response.json(
+    { message: result.message },
+    { status: result.reason === "unavailable" ? 409 : 503 },
+  );
 }
