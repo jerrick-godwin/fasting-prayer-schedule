@@ -1,5 +1,5 @@
 import { BookingExperience } from "@/components/booking-experience";
-import { getPublicSlots } from "@/lib/calendly";
+import { getPublicSlots } from "@/lib/reservations";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";

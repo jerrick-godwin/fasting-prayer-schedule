@@ -6,7 +6,7 @@ import type { PublicSlot } from "@/lib/slots";
 type BookingModalProps = {
   slot: PublicSlot;
   onClose: () => void;
-  onBooked: (slotId: string) => void;
+  onBooked: (slotId: string, emailDelayed: boolean) => void;
 };
 
 export function BookingModal({ slot, onClose, onBooked }: BookingModalProps) {
@@ -46,9 +46,9 @@ export function BookingModal({ slot, onClose, onBooked }: BookingModalProps) {
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/London",
         }),
       });
-      const result = (await response.json()) as { success?: boolean; message?: string };
+      const result = (await response.json()) as { success?: boolean; emailDelayed?: boolean; message?: string };
       if (!response.ok) throw new Error(result.message || "Unable to complete the booking.");
-      onBooked(slot.id);
+      onBooked(slot.id, Boolean(result.emailDelayed));
     } catch (bookingError) {
       setError(
         bookingError instanceof Error

@@ -20,10 +20,9 @@ export type SlotDefinition = {
   end: string;
   duration: 120 | 180 | 235;
   tone: SlotTone;
-  initiallyBooked: boolean;
 };
 
-export type PublicSlot = Omit<SlotDefinition, "initiallyBooked"> & {
+export type PublicSlot = SlotDefinition & {
   status: "available" | "booked";
 };
 
@@ -40,7 +39,6 @@ export const slots: readonly SlotDefinition[] = [
     end: "2026-09-18T11:00:00.000Z",
     duration: 180,
     tone: "green",
-    initiallyBooked: true,
   },
   {
     id: "slot-2",
@@ -52,7 +50,6 @@ export const slots: readonly SlotDefinition[] = [
     end: "2026-09-18T13:00:00.000Z",
     duration: 120,
     tone: "orange",
-    initiallyBooked: false,
   },
   {
     id: "slot-3",
@@ -64,7 +61,6 @@ export const slots: readonly SlotDefinition[] = [
     end: "2026-09-18T16:00:00.000Z",
     duration: 180,
     tone: "blue",
-    initiallyBooked: true,
   },
   {
     id: "slot-4",
@@ -76,7 +72,6 @@ export const slots: readonly SlotDefinition[] = [
     end: "2026-09-18T19:00:00.000Z",
     duration: 180,
     tone: "yellow",
-    initiallyBooked: false,
   },
   {
     id: "slot-5",
@@ -88,7 +83,6 @@ export const slots: readonly SlotDefinition[] = [
     end: "2026-09-18T22:55:00.000Z",
     duration: 235,
     tone: "purple",
-    initiallyBooked: true,
   },
   {
     id: "slot-6",
@@ -100,7 +94,6 @@ export const slots: readonly SlotDefinition[] = [
     end: "2026-09-19T02:00:00.000Z",
     duration: 180,
     tone: "sky",
-    initiallyBooked: false,
   },
   {
     id: "slot-7",
@@ -112,7 +105,6 @@ export const slots: readonly SlotDefinition[] = [
     end: "2026-09-19T04:00:00.000Z",
     duration: 120,
     tone: "mint",
-    initiallyBooked: false,
   },
   {
     id: "slot-8",
@@ -124,7 +116,6 @@ export const slots: readonly SlotDefinition[] = [
     end: "2026-09-19T06:00:00.000Z",
     duration: 120,
     tone: "pink",
-    initiallyBooked: false,
   },
   {
     id: "slot-9",
@@ -136,7 +127,6 @@ export const slots: readonly SlotDefinition[] = [
     end: "2026-09-19T08:00:00.000Z",
     duration: 120,
     tone: "red",
-    initiallyBooked: true,
   },
 ] as const;
 
@@ -145,10 +135,5 @@ export function getSlot(slotId: string) {
 }
 
 export function toPublicSlot(slot: SlotDefinition, available: boolean): PublicSlot {
-  const { initiallyBooked: _initiallyBooked, ...publicDefinition } = slot;
-  void _initiallyBooked;
-  return {
-    ...publicDefinition,
-    status: available && !slot.initiallyBooked ? "available" : "booked",
-  };
+  return { ...slot, status: available ? "available" : "booked" };
 }
