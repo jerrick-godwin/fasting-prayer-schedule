@@ -19,6 +19,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   if (!(await isAdminAuthenticated())) redirect("/admin/login");
   const [reservations, query] = await Promise.all([listReservations(), searchParams]);
   const active = reservations.filter((item) => item.status === "active");
+  const history = reservations.filter((item) => item.status !== "active");
   const booked = active.filter((item) => item.kind === "booking").length;
   const blocked = active.filter((item) => item.kind === "block").length;
   const cancelled = reservations.filter((item) => item.status === "cancelled").length;
@@ -29,6 +30,54 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     if (reservation.status === "cancelled" && !replacementRowBySlot.has(reservation.slot_id)) {
       replacementRowBySlot.set(reservation.slot_id, reservation.id);
     }
+  }
+
+  function renderReservationRow(reservation: (typeof reservations)[number]) {
+    const slot = getSlot(reservation.slot_id);
+    return (
+      <tr key={reservation.id}>
+        <td><strong>{slot ? `Slot ${String(slot.number).padStart(2, "0")}` : reservation.slot_id}</strong><small>{slot?.timeLabel}</small></td>
+        <td><span className={`admin-status admin-status--${reservation.status}`}>{reservation.kind === "block" && reservation.status === "active" ? "blocked" : reservation.status}</span><small>{reservation.source}</small></td>
+        <td>{reservation.attendee_name ?? (reservation.pii_purged_at ? "Details purged" : "—")}</td>
+        <td>{reservation.attendee_email ? <><a href={`mailto:${reservation.attendee_email}`}>{reservation.attendee_email}</a><small>{reservation.attendee_phone}</small></> : "—"}</td>
+        <td>{reservation.email_status.replace("_", " ")}</td>
+        <td className="admin-actions">
+          {reservation.status === "active" && reservation.kind === "booking" ? <>
+            <form action={resendConfirmationAction}><input type="hidden" name="id" value={reservation.id} /><button type="submit">Resend</button></form>
+            <details className="confirm-details"><summary>Cancel</summary><form action={cancelBookingAction}><input type="hidden" name="id" value={reservation.id} /><button className="is-danger" type="submit">Confirm cancellation</button></form></details>
+          </> : null}
+          {reservation.status === "active" && reservation.kind === "block" ? <>
+            <form action={releaseBlockAction}><input type="hidden" name="id" value={reservation.id} /><button type="submit">Release</button></form>
+            <details className="attach-details"><summary>Add attendee</summary><form action={attachAttendeeAction}>
+              <input type="hidden" name="id" value={reservation.id} />
+              <input name="name" placeholder="Full name" required />
+              <input name="email" type="email" placeholder="Email" required />
+              <input name="phone" type="tel" placeholder="Phone" required />
+              <input name="timezone" value="Europe/London" readOnly />
+              <button type="submit">Attach &amp; send</button>
+            </form></details>
+          </> : null}
+          {reservation.status === "cancelled" && replacementRowBySlot.get(reservation.slot_id) === reservation.id ? (
+            activeBySlot.has(reservation.slot_id) ? (
+              <small className="admin-action-note">Slot rebooked</small>
+            ) : (
+              <details className="attach-details">
+                <summary>Book another person</summary>
+                <form action={bookReplacementAction}>
+                  <input type="hidden" name="slotId" value={reservation.slot_id} />
+                  <input name="name" placeholder="Full name" required />
+                  <input name="email" type="email" placeholder="Email" required />
+                  <input name="phone" type="tel" placeholder="Phone" required />
+                  <input name="timezone" value="Europe/London" readOnly />
+                  <button type="submit">Book &amp; send</button>
+                </form>
+              </details>
+            )
+          ) : null}
+          {reservation.status !== "active" && !reservation.pii_purged_at && reservation.attendee_email ? <details className="confirm-details"><summary>Purge details</summary><form action={purgePiiAction}><input type="hidden" name="id" value={reservation.id} /><button className="is-danger" type="submit">Permanently purge</button></form></details> : null}
+        </td>
+      </tr>
+    );
   }
 
   return (
@@ -74,58 +123,32 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           })}
         </div>
       </section>
-      <section className="admin-table-wrap">
-        <table className="admin-table">
-          <thead><tr><th>Slot</th><th>Status</th><th>Attendee</th><th>Contact</th><th>Email</th><th>Actions</th></tr></thead>
-          <tbody>{reservations.map((reservation) => {
-            const slot = getSlot(reservation.slot_id);
-            return (
-              <tr key={reservation.id}>
-                <td><strong>{slot ? `Slot ${String(slot.number).padStart(2, "0")}` : reservation.slot_id}</strong><small>{slot?.timeLabel}</small></td>
-                <td><span className={`admin-status admin-status--${reservation.status}`}>{reservation.kind === "block" && reservation.status === "active" ? "blocked" : reservation.status}</span><small>{reservation.source}</small></td>
-                <td>{reservation.attendee_name ?? (reservation.pii_purged_at ? "Details purged" : "—")}</td>
-                <td>{reservation.attendee_email ? <><a href={`mailto:${reservation.attendee_email}`}>{reservation.attendee_email}</a><small>{reservation.attendee_phone}</small></> : "—"}</td>
-                <td>{reservation.email_status.replace("_", " ")}</td>
-                <td className="admin-actions">
-                  {reservation.status === "active" && reservation.kind === "booking" ? <>
-                    <form action={resendConfirmationAction}><input type="hidden" name="id" value={reservation.id} /><button type="submit">Resend</button></form>
-                    <details className="confirm-details"><summary>Cancel</summary><form action={cancelBookingAction}><input type="hidden" name="id" value={reservation.id} /><button className="is-danger" type="submit">Confirm cancellation</button></form></details>
-                  </> : null}
-                  {reservation.status === "active" && reservation.kind === "block" ? <>
-                    <form action={releaseBlockAction}><input type="hidden" name="id" value={reservation.id} /><button type="submit">Release</button></form>
-                    <details className="attach-details"><summary>Add attendee</summary><form action={attachAttendeeAction}>
-                      <input type="hidden" name="id" value={reservation.id} />
-                      <input name="name" placeholder="Full name" required />
-                      <input name="email" type="email" placeholder="Email" required />
-                      <input name="phone" type="tel" placeholder="Phone" required />
-                      <input name="timezone" value="Europe/London" readOnly />
-                      <button type="submit">Attach &amp; send</button>
-                    </form></details>
-                  </> : null}
-                  {reservation.status === "cancelled" && replacementRowBySlot.get(reservation.slot_id) === reservation.id ? (
-                    activeBySlot.has(reservation.slot_id) ? (
-                      <small className="admin-action-note">Slot rebooked</small>
-                    ) : (
-                      <details className="attach-details">
-                        <summary>Book another person</summary>
-                        <form action={bookReplacementAction}>
-                          <input type="hidden" name="slotId" value={reservation.slot_id} />
-                          <input name="name" placeholder="Full name" required />
-                          <input name="email" type="email" placeholder="Email" required />
-                          <input name="phone" type="tel" placeholder="Phone" required />
-                          <input name="timezone" value="Europe/London" readOnly />
-                          <button type="submit">Book &amp; send</button>
-                        </form>
-                      </details>
-                    )
-                  ) : null}
-                  {reservation.status !== "active" && !reservation.pii_purged_at && reservation.attendee_email ? <details className="confirm-details"><summary>Purge details</summary><form action={purgePiiAction}><input type="hidden" name="id" value={reservation.id} /><button className="is-danger" type="submit">Permanently purge</button></form></details> : null}
-                </td>
-              </tr>
-            );
-          })}</tbody>
-        </table>
+      <section className="admin-bookings" aria-labelledby="current-schedule-title">
+        <div className="admin-list-heading">
+          <h2 id="current-schedule-title">Current schedule</h2>
+          <span>{active.length} active {active.length === 1 ? "record" : "records"}</span>
+        </div>
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead><tr><th>Slot</th><th>Status</th><th>Attendee</th><th>Contact</th><th>Email</th><th>Actions</th></tr></thead>
+            <tbody>{active.map(renderReservationRow)}</tbody>
+          </table>
+        </div>
       </section>
+      {history.length > 0 ? (
+        <details className="admin-history">
+          <summary>
+            <span><strong>Booking history</strong><small>{history.length} previous {history.length === 1 ? "record" : "records"}</small></span>
+            <span className="admin-history__toggle" aria-hidden="true" />
+          </summary>
+          <div className="admin-table-wrap admin-table-wrap--history">
+            <table className="admin-table">
+              <thead><tr><th>Slot</th><th>Status</th><th>Attendee</th><th>Contact</th><th>Email</th><th>Actions</th></tr></thead>
+              <tbody>{history.map(renderReservationRow)}</tbody>
+            </table>
+          </div>
+        </details>
+      ) : null}
     </main>
   );
 }
