@@ -5,6 +5,7 @@ import { listReservations } from "@/lib/reservations";
 import {
   attachAttendeeAction,
   blockSlotAction,
+  bookReplacementAction,
   cancelBookingAction,
   logoutAction,
   purgePiiAction,
@@ -23,6 +24,12 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const cancelled = reservations.filter((item) => item.status === "cancelled").length;
   const available = slots.length - active.length;
   const activeBySlot = new Map(active.map((reservation) => [reservation.slot_id, reservation]));
+  const replacementRowBySlot = new Map<string, string>();
+  for (const reservation of reservations) {
+    if (reservation.status === "cancelled" && !replacementRowBySlot.has(reservation.slot_id)) {
+      replacementRowBySlot.set(reservation.slot_id, reservation.id);
+    }
+  }
 
   return (
     <main className="admin-page">
@@ -95,6 +102,23 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
                       <button type="submit">Attach &amp; send</button>
                     </form></details>
                   </> : null}
+                  {reservation.status === "cancelled" && replacementRowBySlot.get(reservation.slot_id) === reservation.id ? (
+                    activeBySlot.has(reservation.slot_id) ? (
+                      <small className="admin-action-note">Slot rebooked</small>
+                    ) : (
+                      <details className="attach-details">
+                        <summary>Book another person</summary>
+                        <form action={bookReplacementAction}>
+                          <input type="hidden" name="slotId" value={reservation.slot_id} />
+                          <input name="name" placeholder="Full name" required />
+                          <input name="email" type="email" placeholder="Email" required />
+                          <input name="phone" type="tel" placeholder="Phone" required />
+                          <input name="timezone" value="Europe/London" readOnly />
+                          <button type="submit">Book &amp; send</button>
+                        </form>
+                      </details>
+                    )
+                  ) : null}
                   {reservation.status !== "active" && !reservation.pii_purged_at && reservation.attendee_email ? <details className="confirm-details"><summary>Purge details</summary><form action={purgePiiAction}><input type="hidden" name="id" value={reservation.id} /><button className="is-danger" type="submit">Permanently purge</button></form></details> : null}
                 </td>
               </tr>
