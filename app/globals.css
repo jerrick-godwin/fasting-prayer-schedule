@@ -434,6 +434,7 @@ footer p { margin: 0; font-size: 11px; }
 .admin-actions { display: flex; flex-wrap: wrap; gap: 7px; min-width: 220px !important; }
 .admin-actions button, .attach-details button { padding: 7px 10px; color: var(--forest); background: #f8f6f0; border: 1px solid var(--line); cursor: pointer; }
 .admin-actions button.is-danger { color: #8d3434; }
+.admin-action-note { align-self: center; margin: 0 !important; white-space: nowrap; }
 .attach-details { width: 100%; }
 .attach-details summary { color: var(--forest); cursor: pointer; font-weight: 700; }
 .attach-details form { display: grid; gap: 7px; margin-top: 10px; }

@@ -9,6 +9,7 @@ import {
   attachAttendeeToBlock,
   cancelReservationById,
   createBlockedReservation,
+  createReservation,
   getReservationById,
   purgeReservationPii,
   releaseBlockedReservation,
@@ -113,6 +114,52 @@ export async function attachAttendeeAction(formData: FormData) {
   revalidatePath("/admin");
   if (deliveryDelayed) adminRedirect("Attendee attached and confirmed, but one notification or reminder is delayed.", "error");
   adminRedirect("Attendee attached and confirmation sent.");
+}
+
+export async function bookReplacementAction(formData: FormData) {
+  await requireAdmin();
+  const slotId = String(formData.get("slotId") ?? "");
+  if (!getSlot(slotId)) adminRedirect("Invalid prayer slot.", "error");
+  const validated = validateBookingPayload({
+    slotId,
+    name: formData.get("name"),
+    email: formData.get("email"),
+    phone: formData.get("phone"),
+    timezone: formData.get("timezone") || "Europe/London",
+    website: "",
+  });
+  if (!validated.success) adminRedirect(validated.message, "error");
+
+  const result = await createReservation(validated.data, "admin");
+  if (!result.ok) {
+    adminRedirect(
+      result.reason === "unavailable" ? "That slot has already been booked." : "Invalid prayer slot.",
+      "error",
+    );
+  }
+
+  let deliveryDelayed = false;
+  try {
+    const email = await sendBookingEmails(result.reservation, result.cancellationToken);
+    deliveryDelayed = email.hadDeliveryDelay;
+    await updateEmailResult(result.reservation.id, {
+      ...email,
+      emailStatus: email.hadDeliveryDelay ? "delayed" : "sent",
+    });
+  } catch (error) {
+    console.error("Replacement booking email failed", error);
+    await updateEmailResult(result.reservation.id, { emailStatus: "delayed" });
+    revalidatePath("/admin");
+    revalidatePath("/");
+    adminRedirect("Replacement booked, but email delivery is delayed.", "error");
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+  if (deliveryDelayed) {
+    adminRedirect("Replacement booked, but one notification or reminder is delayed.", "error");
+  }
+  adminRedirect("Replacement attendee booked and confirmation sent.");
 }
 
 export async function resendConfirmationAction(formData: FormData) {

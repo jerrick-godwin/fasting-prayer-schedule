@@ -51,7 +51,7 @@ export async function getPublicSlots(): Promise<PublicSlot[]> {
   }
 }
 
-export async function createReservation(input: BookingPayload) {
+export async function createReservation(input: BookingPayload, source: "website" | "admin" = "website") {
   const slot = getSlot(input.slotId);
   if (!slot) return { ok: false as const, reason: "invalid" as const };
 
@@ -70,7 +70,7 @@ export async function createReservation(input: BookingPayload) {
         booking_uid, email_status
       ) VALUES (
         ${id}::uuid, ${slot.id}, 'booking', 'active', ${input.name}, ${input.email},
-        ${input.phone}, ${input.timezone}, 'website', ${cancellationTokenHash},
+        ${input.phone}, ${input.timezone}, ${source}, ${cancellationTokenHash},
         ${bookingUid}, 'pending'
       )
       RETURNING *
